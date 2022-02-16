@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+    <appender name="Console" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%d{HH:mm:ss.SSS} [%.20thread] %highlight(%-5level) %yellow(%logger{0}): %msg%n%throwable</pattern>
+        </encoder>
+    </appender>
+    <appender name="File" class="ch.qos.logback.core.FileAppender">
+        <file>notification.log</file>
+        <encoder>
+            <pattern>%d{HH:mm:ss.SSS} [%.20thread] %highlight(%-5level) %yellow(%logger{0}): %msg%n%throwable</pattern>
+        </encoder>
+    </appender>
+    <root level="info">
+        <appender-ref ref="Console"/>
+        <appender-ref ref="File"/>
+    </root>
+</configuration>
