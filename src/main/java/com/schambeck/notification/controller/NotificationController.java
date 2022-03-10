@@ -29,7 +29,7 @@ class NotificationController {
     @PostMapping
     @ResponseStatus(CREATED)
     Notification create(@RequestBody Notification notification, Principal principal) {
-        Notification created = service.create(notification);
+        Notification created = service.create(notification, principal.getName());
         long countUnread = service.countUnread(principal.getName());
         sendNotification(principal.getName(), countUnread, created);
         return created;

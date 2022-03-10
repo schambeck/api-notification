@@ -20,8 +20,9 @@ public class NotificationServiceImpl implements NotificationService {
 
     @Override
     @Transactional
-    public Notification create(Notification notification) {
+    public Notification create(Notification notification, String userId) {
         notification.setRead(false);
+        notification.setUserId(userId);
         return repository.save(notification);
     }
 

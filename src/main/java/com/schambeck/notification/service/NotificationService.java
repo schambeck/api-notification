@@ -7,7 +7,7 @@ import java.util.UUID;
 
 public interface NotificationService {
 
-    Notification create(Notification invoice);
+    Notification create(Notification invoice, String userId);
 
     long markAsReadAndCount(UUID id, String userId);
 
