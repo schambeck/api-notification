@@ -13,6 +13,7 @@ public class NotificationDto implements Serializable {
 
     private final UUID id;
     private final TypeNotification type;
+    private final String userId;
     private final String title;
     private final String message;
     private final Boolean read;

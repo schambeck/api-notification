@@ -5,8 +5,11 @@ import com.schambeck.notification.service.NotificationService;
 import com.schambeck.notification.service.SseEmitters;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
@@ -21,21 +24,24 @@ class SseController {
     private static final long TIMEOUT = 60000L;
     private final SseEmitters emitters;
     private final NotificationService service;
+    private final JwtDecoder jwtDecoder;
 
     @GetMapping(produces = TEXT_EVENT_STREAM_VALUE)
-    SseEmitter stream() {
-        SseEmitter emitter = emitters.add(new SseEmitter(TIMEOUT));
-        long countUnread = service.countByReadIsFalse();
-        sendNotification(countUnread);
+    SseEmitter stream(@RequestParam String token) {
+        Jwt jwt = jwtDecoder.decode(token);
+        String userId = jwt.getClaimAsString("sub");
+        SseEmitter emitter = emitters.add(userId, new SseEmitter(TIMEOUT));
+        long countUnread = service.countUnread(userId);
+        sendNotification(userId, countUnread);
         return emitter;
     }
 
-    private void sendNotification(long countUnread) {
+    private void sendNotification(String userId, long countUnread) {
         CountUnreadMessage message = CountUnreadMessage.builder()
                 .countUnread(countUnread)
                 .build();
-        emitters.send(message);
-        log.info("Message sent: {}", message);
+        emitters.send(userId, message);
+        log.info("Initial Message sent to {}: {}", userId, message);
     }
 
 }

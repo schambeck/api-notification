@@ -21,6 +21,9 @@ public class Notification {
     @Column(name = "type")
     private TypeNotification type;
 
+    @Column(name = "user_id")
+    private String userId;
+
     @Column(name = "title")
     private String title;
 

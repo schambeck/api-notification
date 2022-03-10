@@ -9,13 +9,13 @@ public interface NotificationService {
 
     Notification create(Notification invoice);
 
-    long markAsReadAndCount(UUID id);
+    long markAsReadAndCount(UUID id, String userId);
 
     void updateRead(Notification notification, Boolean read);
 
-    long countByReadIsFalse();
+    long countUnread(String userId);
 
-    List<Notification> findAll();
+    List<Notification> findByUserId(String userId);
 
     Notification findById(UUID id);
 

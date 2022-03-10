@@ -9,12 +9,12 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.HashMap;
+import java.security.Principal;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 
-import static org.springframework.http.HttpStatus.*;
+import static org.springframework.http.HttpStatus.CREATED;
+import static org.springframework.http.HttpStatus.OK;
 
 @Slf4j
 @Validated
@@ -28,45 +28,45 @@ class NotificationController {
 
     @PostMapping
     @ResponseStatus(CREATED)
-    Notification create(@RequestBody Notification notification) {
+    Notification create(@RequestBody Notification notification, Principal principal) {
         Notification created = service.create(notification);
-        long countUnread = service.countByReadIsFalse();
-        sendNotification(countUnread, created);
+        long countUnread = service.countUnread(principal.getName());
+        sendNotification(principal.getName(), countUnread, created);
         return created;
     }
 
     @PutMapping("/{id}/actions/mark-as-read")
     @ResponseStatus(OK)
-    CountUnreadMessage markAsRead(@PathVariable("id") UUID id) {
-        long countUnread = service.markAsReadAndCount(id);
-        return sendNotification(countUnread);
+    CountUnreadMessage markAsRead(@PathVariable("id") UUID id, Principal principal) {
+        long countUnread = service.markAsReadAndCount(id, principal.getName());
+        return sendNotification(principal.getName(), countUnread);
     }
 
     @GetMapping("/queries/count-unread")
     @ResponseStatus(OK)
-    Map<String, Long> countUnread() {
-        Map<String, Long> map = new HashMap<>();
-        map.put("countUnread", service.countByReadIsFalse());
-        return map;
+    CountUnreadMessage countUnread(Principal principal) {
+        return CountUnreadMessage.builder()
+                .countUnread(service.countUnread(principal.getName()))
+                .build();
     }
 
-    @GetMapping
+    @GetMapping("/queries/find-by-user")
     @ResponseStatus(OK)
-    List<Notification> findAll() {
-        return service.findAll();
+    List<Notification> findByUserId(Principal principal) {
+        return service.findByUserId(principal.getName());
     }
 
-    private CountUnreadMessage sendNotification(long countUnread) {
-        return sendNotification(countUnread, null);
+    private CountUnreadMessage sendNotification(String userId, long countUnread) {
+        return sendNotification(userId, countUnread, null);
     }
 
-    private CountUnreadMessage sendNotification(long countUnread, Notification notification) {
+    private CountUnreadMessage sendNotification(String userId, long countUnread, Notification notification) {
         CountUnreadMessage message = CountUnreadMessage.builder()
                 .countUnread(countUnread)
                 .notification(notification)
                 .build();
-        emitters.send(message);
-        log.info("Message sent: {}", message);
+        emitters.send(userId, message);
+        log.info("Message sent to {}: {}", userId, message);
         return message;
     }
 

@@ -1,5 +1,6 @@
 CREATE TABLE IF NOT EXISTS notification (
     id UUID PRIMARY KEY NOT NULL,
+    user_id VARCHAR(255) NOT NULL,
     type VARCHAR(10) NOT NULL,
     title VARCHAR(255) NOT NULL,
     message VARCHAR(1024) NOT NULL,

@@ -7,24 +7,27 @@ import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 @Slf4j
 @Service
 public class SseEmitters {
 
-    private final List<SseEmitter> emitters = new CopyOnWriteArrayList<>();
+    private final Map<String, List<SseEmitter>> emitters = new ConcurrentHashMap<>();
 
-    public void send(Object obj) {
-        send(emitter -> emitter.send(obj));
+    public void send(String userId, Object obj) {
+        send(userId, emitter -> emitter.send(obj));
     }
 
-    private void send(SseEmitterConsumer<SseEmitter> consumer) {
+    private void send(String userId, SseEmitterConsumer<SseEmitter> consumer) {
         List<SseEmitter> failedEmitters = new ArrayList<>();
         if (emitters.isEmpty()) {
             log.debug("No active emitters");
         }
-        emitters.forEach(emitter -> {
+        List<SseEmitter> emitterList = emitters.get(userId);
+        emitterList.forEach(emitter -> {
             try {
                 consumer.accept(emitter);
             } catch (Exception e) {
@@ -33,22 +36,33 @@ public class SseEmitters {
                 log.error("Emitter failed: {}", emitter, e);
             }
         });
-        emitters.removeAll(failedEmitters);
+        failedEmitters.forEach(emitter -> removeEmitter(emitter, emitterList, userId));
     }
 
-    public SseEmitter add(SseEmitter emitter) {
+    public SseEmitter add(String userId, SseEmitter emitter) {
         log.debug("Emitter added: {}", emitter);
-        emitters.add(emitter);
+        if (!emitters.containsKey(userId)) {
+            emitters.put(userId, new CopyOnWriteArrayList<>());
+        }
+        List<SseEmitter> emitterList = emitters.get(userId);
+        emitterList.add(emitter);
         emitter.onCompletion(() -> {
             log.debug("Emitter completed: {}", emitter);
-            emitters.remove(emitter);
+            removeEmitter(emitter, emitterList, userId);
         });
         emitter.onTimeout(() -> {
             log.debug("Emitter timeout: {}", emitter);
             emitter.complete();
-            emitters.remove(emitter);
+            removeEmitter(emitter, emitterList, userId);
         });
         return emitter;
+    }
+
+    private void removeEmitter(SseEmitter emitter, List<SseEmitter> emitterList, String userId) {
+        emitterList.remove(emitter);
+        if (emitterList.isEmpty()) {
+            emitters.remove(userId);
+        }
     }
 
     @FunctionalInterface

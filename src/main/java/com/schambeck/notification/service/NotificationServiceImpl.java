@@ -26,10 +26,10 @@ public class NotificationServiceImpl implements NotificationService {
     }
 
     @Override
-    public long markAsReadAndCount(UUID id) {
+    public long markAsReadAndCount(UUID id, String userId) {
         Notification notification = findById(id);
         updateRead(notification, true);
-        return repository.countByReadIsFalse();
+        return repository.countByUserIdAndReadIsFalse(userId);
     }
 
     @Override
@@ -41,13 +41,13 @@ public class NotificationServiceImpl implements NotificationService {
     }
 
     @Override
-    public long countByReadIsFalse() {
-        return repository.countByReadIsFalse();
+    public long countUnread(String userId) {
+        return repository.countByUserIdAndReadIsFalse(userId);
     }
 
     @Override
-    public List<Notification> findAll() {
-        return repository.findAll();
+    public List<Notification> findByUserId(String userId) {
+        return repository.findByUserId(userId);
     }
 
     @Override
