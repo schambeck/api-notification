@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 
@@ -26,17 +27,18 @@ public class SseEmitters {
         if (emitters.isEmpty()) {
             log.debug("No active emitters");
         }
-        List<SseEmitter> emitterList = emitters.get(userId);
-        emitterList.forEach(emitter -> {
-            try {
-                consumer.accept(emitter);
-            } catch (Exception e) {
-                emitter.completeWithError(e);
-                failedEmitters.add(emitter);
-                log.error("Emitter failed: {}", emitter, e);
-            }
+        Optional.ofNullable(emitters.get(userId)).ifPresent(emitterList -> {
+            emitterList.forEach(emitter -> {
+                try {
+                    consumer.accept(emitter);
+                } catch (Exception e) {
+                    emitter.completeWithError(e);
+                    failedEmitters.add(emitter);
+                    log.error("Emitter failed: {}", emitter, e);
+                }
+            });
+            failedEmitters.forEach(emitter -> removeEmitter(emitter, emitterList, userId));
         });
-        failedEmitters.forEach(emitter -> removeEmitter(emitter, emitterList, userId));
     }
 
     public SseEmitter add(String userId, SseEmitter emitter) {
