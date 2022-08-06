@@ -1,0 +1,41 @@
+version: '3.9'
+
+services:
+  web:
+    image: api-notification:latest
+    networks:
+      - backend
+    environment:
+      - SPRING_DATASOURCE_URL=${DB_URL:-jdbc:postgresql://db:5432/notification}
+      - SPRING_DATASOURCE_USERNAME=${DB_USERNAME:-postgres}
+      - SPRING_DATASOURCE_PASSWORD=${DB_PASSWORD:-postgres}
+    deploy:
+      replicas: 1
+      resources:
+        limits:
+          memory: 384M
+        reservations:
+          memory: 256M
+  db:
+    image: 'postgres:12.9-alpine'
+    networks:
+      - backend
+    environment:
+      - POSTGRES_DB=notification
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+  haproxy:
+    image: haproxytech/haproxy-alpine:latest
+    hostname: api-notification-server
+    networks:
+      - my-overlay
+      - backend
+    volumes:
+      - ./haproxy.cfg:/usr/local/etc/haproxy/haproxy.cfg:ro
+    ports:
+      - "4010:80"
+      - "8414:8404"
+networks:
+  my-overlay:
+    external: true
+  backend: {}
