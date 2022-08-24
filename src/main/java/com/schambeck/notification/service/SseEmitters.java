@@ -34,7 +34,7 @@ public class SseEmitters {
                 } catch (Exception e) {
                     emitter.completeWithError(e);
                     failedEmitters.add(emitter);
-                    log.error("Emitter failed: {}", emitter, e);
+                    log.warn("Emitter failed: {}", userId);
                 }
             });
             failedEmitters.forEach(emitter -> removeEmitter(emitter, emitterList, userId));

@@ -1,10 +1,10 @@
 APP = api-notification
-VERSION = 0.0.1-SNAPSHOT
+VERSION = 1.0.0
 JAR = ${APP}-${VERSION}.jar
 TARGET_JAR = target/${JAR}
 #JAVA_OPTS = -XX:+UseSerialGC -Xss512k -XX:MaxRAM=72m -Dspring.main.lazy-initialization=true -Dspring.config.location=classpath:/application.properties
 #JAVA_OPTS = -Dserver.port=8081 -javaagent:new-relic/newrelic.jar
-JAVA_OPTS = -Dserver.port=8081
+JAVA_OPTS = -Dserver.port=0
 
 #DOCKER_IMAGE = schambeck.jfrog.io/schambeck-docker/${APP}:latest
 DOCKER_IMAGE = ${APP}:latest
@@ -17,32 +17,33 @@ AB_FOLDER = ab-results
 AB_TIME = 10
 AB_CONCURRENCY = 5
 
-BASE_URL = http://localhost:8081
+BASE_URL = http://localhost:8090
 NOTIFICATION_ENDPOINT = ${BASE_URL}/notifications
 SSE_ENDPOINT = ${BASE_URL}/sse
+TOKEN =
 
 # Maven
 
 clean:
-	mvn clean
+	./mvnw clean
 
 all: clean
-	mvn compile
+	./mvnw compile
 
 install: clean
-	mvn install
+	./mvnw install
 
 check: clean
-	mvn verify
+	./mvnw verify
 
 check-unit: clean
-	mvn test
+	./mvnw test
 
 check-integration: clean
-	mvn integration-test
+	./mvnw integration-test
 
 dist: clean
-	mvn package -Dmaven.test.skip=true
+	./mvnw package -Dmaven.test.skip=true
 
 dist-run: dist run
 
@@ -53,11 +54,26 @@ run:
 
 dist-docker-build: dist docker-build
 
+dist-docker-build-push: dist docker-build docker-push
+
 docker-build:
 	DOCKER_BUILDKIT=1 docker build -f ${DOCKER_CONF} -t ${DOCKER_IMAGE} --build-arg=JAR_FILE=${JAR} target
 
 docker-run:
-	docker run -p8080:8080 ${DOCKER_IMAGE}
+	docker run -d \
+		--restart=always \
+		--net schambeck-bridge \
+		--name ${APP} \
+		--env DISCOVERY_URI=http://srv-discovery:8761/eureka \
+		--env AUTH_URI=http://srv-authorization-kc:9000 \
+		--env SPRING_SQL_INIT_MODE=always \
+		--env SPRING_RABBITMQ_HOST=rabbitmq \
+		--env SPRING_RABBITMQ_PORT=5672 \
+		--env SPRING_RABBITMQ_VIRTUAL_HOST= \
+		--env SPRING_RABBITMQ_USERNAME=guest \
+		--env SPRING_RABBITMQ_PASSWORD=guest \
+		--publish 8080:8080 \
+		${DOCKER_IMAGE}
 
 --rm-docker-image:
 	docker rmi ${DOCKER_IMAGE}
@@ -84,7 +100,7 @@ dist-docker-build-cp-jar: dist docker-build docker-cp-jar
 dist-compose-up: dist compose-up
 
 compose-up:
-	docker-compose -f ${COMPOSE_CONF} up -d --build
+	docker-compose -p ${APP} -f ${COMPOSE_CONF} up -d --build
 
 compose-down: --compose-down
 
@@ -124,8 +140,6 @@ docker-service-rm-eureka:
 docker-service-rm: docker-service-rm-web docker-service-rm-db docker-service-rm-haproxy
 
 # HTTPie
-
-TOKEN = eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6IkJCZjlwWnlFamQyTzlVQXVWNjJtTSJ9.eyJpc3MiOiJodHRwczovL2Rldi1sdWc5dWc0bi51cy5hdXRoMC5jb20vIiwic3ViIjoic0MxNXVSUzJOWmgwTTlVT1FnTkk4WWJYTTUwYVNpUmFAY2xpZW50cyIsImF1ZCI6Imh0dHA6Ly9kbmEtc2NoYW1iZWNrLmhlcm9rdWFwcC5jb20iLCJpYXQiOjE2NTk1OTk0OTQsImV4cCI6MTY1OTY4NTg5NCwiYXpwIjoic0MxNXVSUzJOWmgwTTlVT1FnTkk4WWJYTTUwYVNpUmEiLCJzY29wZSI6InJlYWQ6c3RhdHMgY3JlYXRlOm11dGFudCBsaXN0Om11dGFudCIsImd0eSI6ImNsaWVudC1jcmVkZW50aWFscyIsInBlcm1pc3Npb25zIjpbInJlYWQ6c3RhdHMiLCJjcmVhdGU6bXV0YW50IiwibGlzdDptdXRhbnQiXX0.KBf2o_phw3k58JhvwlM7c6XQNZi-hIrG-5ccCCgztnOIuuzcGUurJO3-e8FClnPX3QZbboPqpjQMG7gxKlXlqy4ZeuCRXwDusDxG10S368kLNaa7b_ch_v31C8TLrjEiYdJLaZAV8kUxCGjeQbhl0ahhXOHM4eStOSibeNbe1iefhiSpktwdwPPdMt9oEo8F3OMvbMdG9MGQEaKUQam_0AlTSjUUZhWrg6poErI-AuTu_5awj9PTglbVzZfSG3duzq6DOioxSdz32bt2JcMz6QDcQQXfPZLeLrXxZOq3fhfI8D_jRIGzw0jn2fRGwPs6nQ8e6ZSGF2XUEOY_a1h6Yg
 
 httpie-create:
 	http POST ${NOTIFICATION_ENDPOINT} \

@@ -6,7 +6,7 @@
         </encoder>
     </appender>
     <appender name="File" class="ch.qos.logback.core.FileAppender">
-        <file>notification.log</file>
+        <file>api-notification.log</file>
         <encoder>
             <pattern>%d{HH:mm:ss.SSS} [%.20thread] %highlight(%-5level) %yellow(%logger{0}): %msg%n%throwable</pattern>
         </encoder>

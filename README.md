@@ -8,8 +8,8 @@
 
     ./mvnw clean package
 
-Executable file generated: target/api-notification-0.0.1-SNAPSHOT.jar
+Executable file generated: target/api-notification-1.0.0.jar
 
 ### Execute application
 
-    java -jar api-notification-0.0.1-SNAPSHOT.jar
+    java -jar api-notification-1.0.0.jar

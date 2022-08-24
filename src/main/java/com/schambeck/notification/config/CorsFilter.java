@@ -8,7 +8,7 @@ import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 @Profile("!test")
-@Component
+//@Component
 class CorsFilter {
 
     @Value("${custom.cors.allowed-origins:http://localhost:4200}")

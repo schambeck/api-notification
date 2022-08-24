@@ -1,14 +1,24 @@
 version: '3.9'
-
 services:
   web:
     image: api-notification:latest
+    hostname: api-notification
     networks:
+#      - schambeck-overlay
+      - schambeck-bridge
       - backend
     environment:
-      - SPRING_DATASOURCE_URL=${DB_URL:-jdbc:postgresql://db:5432/notification}
-      - SPRING_DATASOURCE_USERNAME=${DB_USERNAME:-postgres}
-      - SPRING_DATASOURCE_PASSWORD=${DB_PASSWORD:-postgres}
+      - SERVER_PORT=8080
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/notification
+      - SPRING_DATASOURCE_USERNAME=postgres
+      - SPRING_DATASOURCE_PASSWORD=postgres
+      - DISCOVERY_URI=http://srv-discovery:8761/eureka
+      - AUTH_URI=http://srv-authorization-kc:9000
+      - SPRING_RABBITMQ_HOST=rabbitmq
+      - SPRING_RABBITMQ_PORT=5672
+      - SPRING_RABBITMQ_VIRTUAL_HOST=
+      - SPRING_RABBITMQ_USERNAME=guest
+      - SPRING_RABBITMQ_PASSWORD=guest
     deploy:
       replicas: 1
       resources:
@@ -16,6 +26,8 @@ services:
           memory: 384M
         reservations:
           memory: 256M
+    ports:
+      - "8090:8080"
   db:
     image: 'postgres:12.9-alpine'
     networks:
@@ -26,16 +38,20 @@ services:
       - POSTGRES_PASSWORD=postgres
   haproxy:
     image: haproxytech/haproxy-alpine:latest
-    hostname: api-notification-server
     networks:
-      - my-overlay
+#      - schambeck-overlay
+      - schambeck-bridge
       - backend
     volumes:
       - ./haproxy.cfg:/usr/local/etc/haproxy/haproxy.cfg:ro
     ports:
       - "4010:80"
       - "8414:8404"
+    deploy:
+      replicas: 0
 networks:
-  my-overlay:
+  schambeck-bridge:
     external: true
+  #  schambeck-overlay:
+  #    external: true
   backend: {}
