@@ -16,7 +16,7 @@ import static org.springframework.http.MediaType.TEXT_EVENT_STREAM_VALUE;
 @RestController
 @RequestMapping("/sse")
 @RequiredArgsConstructor
-@CrossOrigin(origins = {"http://localhost:4200", "https://schambeck.github.io/ui-dna"})
+@CrossOrigin(origins = {"http://localhost:4200", "https://schambeck.github.io"})
 class SseController {
 
     private static final long TIMEOUT = 60000L;
