@@ -15,9 +15,9 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     protected void configure(HttpSecurity http) throws Exception {
         http.cors()
                 .and().authorizeRequests()
-                .mvcMatchers(GET, "/notifications").authenticated()
-                .mvcMatchers(POST, "/notifications").authenticated()
-                .mvcMatchers(PUT, "/notifications").authenticated()
+                .antMatchers(GET, "/notifications/**").hasAuthority("SCOPE_read")
+                .antMatchers(POST, "/notifications").hasAuthority("SCOPE_write")
+                .antMatchers(PUT, "/notifications").hasAuthority("SCOPE_write")
                 .anyRequest().permitAll()
                 .and().oauth2ResourceServer().jwt();
     }
