@@ -2,14 +2,14 @@ package com.schambeck.notification.config;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
-import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 @Profile("!test")
-//@Component
-class CorsFilter {
+@Configuration
+class CorsConfig {
 
     @Value("${custom.cors.allowed-origins:http://localhost:4200}")
     private String[] allowedOrigins;
@@ -19,7 +19,9 @@ class CorsFilter {
         return new WebMvcConfigurer() {
             @Override
             public void addCorsMappings(CorsRegistry registry) {
-                registry.addMapping("/**").allowedMethods("*").allowedOrigins(allowedOrigins);
+                registry.addMapping("/**")
+                        .allowedMethods("*")
+                        .allowedOrigins(allowedOrigins);
             }
         };
     }

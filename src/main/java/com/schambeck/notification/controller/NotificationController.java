@@ -21,7 +21,6 @@ import static org.springframework.http.HttpStatus.OK;
 @RestController
 @RequestMapping("/notifications")
 @RequiredArgsConstructor
-@CrossOrigin(origins = {"http://localhost:4200", "https://schambeck.github.io"})
 class NotificationController {
 
     private final NotificationService service;
