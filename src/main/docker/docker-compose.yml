@@ -13,7 +13,7 @@ services:
       - SPRING_DATASOURCE_USERNAME=postgres
       - SPRING_DATASOURCE_PASSWORD=postgres
       - DISCOVERY_URI=http://srv-discovery:8761/eureka
-      - AUTH_URI=http://srv-authorization-kc:9000
+      - AUTH_URI=http://srv-authorization:9000
       - SPRING_RABBITMQ_HOST=rabbitmq
       - SPRING_RABBITMQ_PORT=5672
       - SPRING_RABBITMQ_VIRTUAL_HOST=
