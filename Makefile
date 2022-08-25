@@ -65,6 +65,7 @@ docker-run:
 		--net schambeck-bridge \
 		--name ${APP} \
 		--env DISCOVERY_URI=http://srv-discovery:8761/eureka \
+		--env EUREKA_INSTANCE_PREFER_IP_ADDRESS=true \
 		--env AUTH_URI=http://srv-authorization-kc:9000 \
 		--env SPRING_SQL_INIT_MODE=always \
 		--env SPRING_RABBITMQ_HOST=rabbitmq \
