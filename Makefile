@@ -6,7 +6,6 @@ TARGET_JAR = target/${JAR}
 #JAVA_OPTS = -Dserver.port=8081 -javaagent:new-relic/newrelic.jar
 JAVA_OPTS = -Dserver.port=0
 
-#DOCKER_IMAGE = schambeck.jfrog.io/schambeck-docker/${APP}:latest
 DOCKER_IMAGE = ${APP}:latest
 DOCKER_FOLDER = src/main/docker
 DOCKER_CONF = ${DOCKER_FOLDER}/Dockerfile
@@ -64,16 +63,17 @@ docker-run:
 		--restart=always \
 		--net schambeck-bridge \
 		--name ${APP} \
+	  	--env SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/notification \
+		--env SPRING_DATASOURCE_USERNAME=postgres \
+		--env SPRING_DATASOURCE_PASSWORD=postgres \
 		--env DISCOVERY_URI=http://srv-discovery:8761/eureka \
-		--env EUREKA_INSTANCE_PREFER_IP_ADDRESS=true \
-		--env AUTH_URI=http://srv-authorization:9000 \
-		--env SPRING_SQL_INIT_MODE=always \
+		--env AUTH_URI=http://srv-authorization:9000/auth/realms/schambeck \
 		--env SPRING_RABBITMQ_HOST=rabbitmq \
 		--env SPRING_RABBITMQ_PORT=5672 \
 		--env SPRING_RABBITMQ_VIRTUAL_HOST= \
 		--env SPRING_RABBITMQ_USERNAME=guest \
 		--env SPRING_RABBITMQ_PASSWORD=guest \
-		--publish 8080:8080 \
+		--publish 8090:8090 \
 		${DOCKER_IMAGE}
 
 --rm-docker-image:
