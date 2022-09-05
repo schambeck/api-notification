@@ -10,6 +10,7 @@ DOCKER_IMAGE = ${APP}:latest
 DOCKER_FOLDER = src/main/docker
 DOCKER_CONF = ${DOCKER_FOLDER}/Dockerfile
 COMPOSE_CONF = ${DOCKER_FOLDER}/docker-compose.yml
+SWARM_CONF = ${DOCKER_FOLDER}/swarm/docker-compose.yml
 REPLICAS = 1
 
 AB_FOLDER = ab-results
@@ -115,30 +116,14 @@ compose-logs:
 
 # Docker Swarm
 
-docker-service-inspect:
-	docker service inspect ${APP}
+stack-deploy:
+	docker stack deploy -c ${SWARM_CONF} --with-registry-auth ${APP}
 
-docker-stack-deploy:
-	cd ${DOCKER_FOLDER} && docker stack deploy -c <(docker-compose config) ${APP}
+stack-rm:
+	docker stack rm ${APP}
 
-dist-docker-build-cp-jar-stack-deploy: dist-docker-build-cp-jar docker-stack-deploy
-
-docker-service-rm-web:
-	docker service rm ${APP}_web
-
-docker-service-rm-db:
-	docker service rm ${APP}_db
-
-docker-service-rm-nginx:
-	docker service rm ${APP}_nginx
-
-docker-service-rm-haproxy:
-	docker service rm ${APP}_haproxy
-
-docker-service-rm-eureka:
-	docker service rm ${APP}_eureka
-
-docker-service-rm: docker-service-rm-web docker-service-rm-db docker-service-rm-haproxy
+service-logs:
+	docker service logs ${APP}_web -f
 
 # HTTPie
 
