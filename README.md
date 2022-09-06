@@ -4,12 +4,36 @@
 
 ## User notification service through Server-sent events
 
+### Initialize Swarm
+
+    docker swarm init
+
 ### Build artifact
 
     ./mvnw clean package
 
-Executable file generated: target/api-notification-1.0.0.jar
+Executable file generated: target/api-dna-1.0.0.jar
 
-### Execute application
+### Build docker image
 
-    java -jar api-notification-1.0.0.jar
+    make docker-build
+
+### Deploy infra stack
+
+    make stack-srv-deploy
+
+### Deploy app stack
+
+    make stack-deploy
+
+### Swagger
+
+    http://api-notification.localhost
+
+### Actuator
+
+    http://api-notification.localhost/actuator
+
+### Config Server
+
+    http://localhost:8888/api-notification/default
