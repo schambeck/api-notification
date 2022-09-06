@@ -56,6 +56,8 @@ dist-docker-build: dist docker-build
 
 dist-docker-build-push: dist docker-build docker-push
 
+docker-build-push: docker-build docker-push
+
 docker-build:
 	DOCKER_BUILDKIT=1 docker build -f ${DOCKER_CONF} -t ${DOCKER_IMAGE} --build-arg=JAR_FILE=${JAR} target
 
