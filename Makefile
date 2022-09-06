@@ -117,7 +117,7 @@ compose-logs:
 # Docker Swarm
 
 stack-deploy:
-	docker stack deploy -c ${SWARM_CONF} --with-registry-auth ${APP}
+	docker stack deploy -c ${COMPOSE_CONF} --with-registry-auth ${APP}
 
 stack-rm:
 	docker stack rm ${APP}
