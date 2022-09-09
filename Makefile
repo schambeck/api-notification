@@ -52,6 +52,8 @@ run:
 
 # Docker
 
+dist-docker-build-deploy: dist docker-build stack-deploy
+
 dist-docker-build: dist docker-build
 
 dist-docker-build-push: dist docker-build docker-push
@@ -94,12 +96,7 @@ docker-push:
 docker-pull:
 	docker pull ${DOCKER_IMAGE}
 
-docker-cp-jar:
-	cp ${TARGET_JAR} ${DOCKER_FOLDER}
-
-dist-docker-build-cp-jar: dist docker-build docker-cp-jar
-
-# Docker Compose
+# Compose
 
 dist-compose-up: dist compose-up
 
@@ -116,7 +113,7 @@ compose-down-rmi: --compose-down --rm-docker-image
 compose-logs:
 	docker-compose -f ${COMPOSE_CONF} logs -f \web
 
-# Docker Swarm
+# Swarm
 
 stack-deploy:
 	docker stack deploy -c ${COMPOSE_CONF} --with-registry-auth ${APP}
